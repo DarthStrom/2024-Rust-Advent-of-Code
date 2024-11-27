@@ -3,7 +3,7 @@ use crate::input;
 pub fn run() {
     let lines = input::get_lines("day01");
 
-    println!("Part1: {:?}", lines);
+    println!("Part1: {:?}", get_solution(&lines));
 }
 
 pub fn get_solution(_lines: &[String]) -> i32 {
