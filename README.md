@@ -4,7 +4,7 @@ My code to solve [2024 Advent of Code](https://adventofcode.com/2024) using Rust
 
 # To find a solution
 
-Create an file with the puzzle input in `input/<day>.txt`
+Create a file with the puzzle input in `input/<day>.txt`
 
 `cargo run <day>`
 
