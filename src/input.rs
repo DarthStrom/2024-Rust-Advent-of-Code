@@ -8,3 +8,7 @@ pub fn get_lines(file_name: &str) -> Vec<String> {
     let contents = get_contents(file_name);
     contents.lines().map(str::to_owned).collect()
 }
+
+pub fn get_lines_str(str: &str) -> Vec<String> {
+    str.lines().map(str::to_owned).collect()
+}
