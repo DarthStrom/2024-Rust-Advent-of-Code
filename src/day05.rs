@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{cmp::Ordering, collections::HashSet};
 
 use crate::input;
 
@@ -6,6 +6,7 @@ pub fn run() {
     let input = input::get_contents("day05");
 
     println!("Part1: {:?}", middle_page_sum(&input));
+    println!("Part2: {:?}", part2(&input));
 }
 
 fn middle_page_sum(input: &str) -> u32 {
@@ -20,6 +21,36 @@ fn middle_page_sum(input: &str) -> u32 {
         .iter()
         .map(|update| update[update.len() / 2])
         .sum()
+}
+
+fn part2(input: &str) -> u32 {
+    let (rules_str, updates_str) = input.split_once("\n\n").unwrap();
+
+    let rule_strs = input::get_lines_str(rules_str);
+    let update_strs = input::get_lines_str(updates_str);
+    let rules = build_rules(&rule_strs);
+
+    let mut invalid_updates = find_invalid_updates(&rule_strs, &update_strs);
+
+    let compare = |a: &u32, b: &u32| {
+        if rules.contains(&(*a, *b)) {
+            Ordering::Less
+        } else if rules.contains(&(*a, *b)) {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    };
+
+    let result: Vec<u32> = invalid_updates
+        .iter_mut()
+        .map(|update| {
+            update.sort_by(compare);
+            update[update.len() / 2]
+        })
+        .collect();
+
+    result.iter().sum()
 }
 
 fn build_rules(rule_strs: &[String]) -> HashSet<(u32, u32)> {
@@ -38,6 +69,17 @@ fn find_valid_updates(rule_strs: &[String], update_strs: &[String]) -> Vec<Vec<u
     updates
         .into_iter()
         .filter(|update| update.is_sorted_by(|a, b| rules.contains(&(*a, *b))))
+        .collect()
+}
+
+fn find_invalid_updates(rule_strs: &[String], update_strs: &[String]) -> Vec<Vec<u32>> {
+    let rules = build_rules(rule_strs);
+
+    let updates = parse_updates(update_strs);
+
+    updates
+        .into_iter()
+        .filter(|update| !update.is_sorted_by(|a, b| rules.contains(&(*a, *b))))
         .collect()
 }
 
@@ -83,6 +125,17 @@ mod tests {
         ]
     }
 
+    fn get_example_updates() -> Vec<String> {
+        vec![
+            "75,47,61,53,29".to_string(),
+            "97,61,53,29,13".to_string(),
+            "75,29,13".to_string(),
+            "75,97,47,61,53".to_string(),
+            "61,13,29".to_string(),
+            "97,13,75,29,47".to_string(),
+        ]
+    }
+
     #[test]
     fn building_rules() {
         assert_eq!(
@@ -116,20 +169,32 @@ mod tests {
     #[test]
     fn finding_valid_updates() {
         let rules = get_example_rules();
-
-        let updates = vec![
-            "75,47,61,53,29".to_string(),
-            "97,61,53,29,13".to_string(),
-            "75,29,13".to_string(),
-            "75,97,47,61,53".to_string(),
-            "61,13,29".to_string(),
-            "97,13,75,29,47".to_string(),
-        ];
+        let updates = get_example_updates();
 
         assert_eq!(find_valid_updates(&rules, &updates), vec![
             vec![75, 47, 61, 53, 29],
             vec![97, 61, 53, 29, 13],
             vec![75, 29, 13],
         ]);
+    }
+
+    #[test]
+    fn finding_invalid_updates() {
+        let rules = get_example_rules();
+        let updates = get_example_updates();
+
+        assert_eq!(find_invalid_updates(&rules, &updates), vec![
+            vec![75, 97, 47, 61, 53],
+            vec![61, 13, 29],
+            vec![97, 13, 75, 29, 47],
+        ]);
+    }
+
+    #[test]
+    fn part2_example() {
+        let rules = get_example_rules().join("\n");
+        let updates = get_example_updates().join("\n");
+
+        assert_eq!(part2(&vec![rules, updates].join("\n\n")), 123);
     }
 }
